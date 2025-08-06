@@ -12,6 +12,7 @@ export class AuthController {
         private readonly authService: AuthService
     ) { }
 
+    @Public()
     @Get('verify-account')
     async verifyAccount(@Query('email') email: string) {
         return this.authService.verifyAccount(email)

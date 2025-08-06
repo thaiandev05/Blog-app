@@ -1,16 +1,22 @@
-import { Injectable } from "@nestjs/common";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { existsSync } from "fs";
-import { readFile } from "fs/promises";
+import { Cache } from "cache-manager";
+import { promises as fs } from 'fs';
 import * as nodemailer from 'nodemailer';
-import { join } from "path";
-import { from } from "rxjs";
+import { join } from 'path';
+
 @Injectable()
 export class EmailService {
 
+    private readonly logger = new Logger()
     private transporter: nodemailer.Transporter
+    private templateCache = new Map<string, string>()
 
-    constructor(configService: ConfigService) {
+    constructor(
+        private readonly configService: ConfigService,
+        @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    ) {
         // create transport
         this.transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -22,42 +28,48 @@ export class EmailService {
     }
 
     // get template
-    async getTemplate(templateName: string) {
-        // get file path
-        const source = join(__dirname, 'templates', `${templateName}.html`)
-
-        // check file
-        if (!existsSync(source)) {
-            throw new Error(`Template ${templateName} not found`)
+    async getTemplate(templateName: string): Promise<string> {
+        if (this.templateCache.has(templateName)) {
+            return this.templateCache.get(templateName)!
         }
 
-        // reading file
-        return await readFile(source, 'utf-8')
-
+        try {
+            const templatePath = join(__dirname, 'templates', `${templateName}.html`)
+            const content = await fs.readFile(templatePath, 'utf8')
+            this.templateCache.set(templateName, content)
+            return content
+        } catch (error) {
+            this.logger.error(`Template not found: ${templateName}`, error);
+            throw new Error(`Template "${templateName}" not found.`);
+        }
     }
 
     // send notification register
     async sendNotificationRegister(toEmail: string, verifyLink: string) {
-        // get template 
+        try {
+            // get template 
+            const deleteLink = 'http://localhost:4000/auth/delete-email?email=' + toEmail
 
-        const deleteLink = 'http://localhost:4000/auth/delete-email?email=' + toEmail
+            const template = await this.getTemplate('notification-register')
+            const subject = "Verify Account"
+            const html = (await template)
+                .replace("{verify_link}", verifyLink)
+                .replace("{delete_link}", deleteLink)
 
-        const template = await this.getTemplate('notification-register')
-        const subject = "Verify Account"
-        const html = (await template)
-            .replace("{verify_link}", verifyLink)
-            .replace("{delete_link}", deleteLink)
+            const mailOptions = {
+                from: `Thaiandev Service: ${this.configService.getOrThrow<string>("EMAIL_USER")}`,
+                to: toEmail,
+                subject,
+                html
+            }
 
+            // send email
+            return await this.transporter.sendMail(mailOptions)
 
-        const mailOptions = {
-            from: `"Thaiandev Service" <${process.env.EMAIL_USER}>`,
-            to: toEmail,
-            subject,
-            html
+        } catch (error) {
+            this.logger.error('Send email failed:', error)
+            return null
         }
-
-        // send email
-        return await this.transporter.sendMail(mailOptions)
     }
 
     // send email notification changepassword
@@ -70,7 +82,7 @@ export class EmailService {
         const html = await template
 
         const mailOptions = {
-            from: `"Thaiandev Service" <${process.env.EMAIL_USER}>`,
+            from: `Thaiandev Service: ${this.configService.getOrThrow<string>("EMAIL_USER")}`,
             to: toEmail,
             subject,
             html
@@ -79,4 +91,6 @@ export class EmailService {
         // send email
         return await this.transporter.sendMail(mailOptions)
     }
+
+
 }

@@ -1,16 +1,15 @@
 import { Cache, CACHE_MANAGER } from "@nestjs/cache-manager";
-import { BadRequestException, ConflictException, ForbiddenException, HttpException, Inject, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { hash, verify } from "argon2";
-import { EmailService } from "src/email/email.service";
-import { PrismaService } from "src/prisma/prisma.service";
-import { CustomCacheService } from "../custom-cache/customCache.service";
-import { RegisterDto } from "./dto/register.dto";
+import { Request, Response } from 'express';
 import { User } from "prisma/generated/prisma";
-import { Request, Response } from 'express'
-import { TokenService } from "./token.service";
+import { ExmailProducerService } from "src/email/email.producer";
+import { PrismaService } from "src/prisma/prisma.service";
 import { ChangePasswordDto } from "./dto/changePassword.dto";
+import { RegisterDto } from "./dto/register.dto";
+import { TokenService } from "./token.service";
 
 const TIME_LIFE_CACHE = 10 * 24 * 60 * 60
 const TIME_LIFE_SESSION = 10 * 365 * 24 * 60 * 60 * 1000
@@ -20,13 +19,12 @@ const TIME_LIFE_REFRESH_TOKEN = 24 * 60 * 60 * 7
 export class AuthService {
 
     constructor(
-        private readonly customCacheService: CustomCacheService,
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private readonly prismaService: PrismaService,
-        private readonly emailService: EmailService,
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
-        private readonly tokenService: TokenService
+        private readonly tokenService: TokenService,
+        private readonly emailProducer: ExmailProducerService
     ) { }
 
     // hashing password
@@ -37,7 +35,6 @@ export class AuthService {
     // verify account with accesstoken
     async validate(accessToken: string) {
         try {
-
             // get id in payload
             const payload = await this.jwtService.verifyAsync(accessToken, {
                 secret: this.configService.getOrThrow<string>("JWT_SECRET")
@@ -89,12 +86,15 @@ export class AuthService {
         const key = `account:${data.email}`
         const user = await this.cacheManager.set(key, newAccount, TIME_LIFE_CACHE)
 
-        console.log(user)
+        const verifyLink = `http://localhost:4000/auth/verify-account?email=${data.email}`
 
         // send email nofification verify account
-        await this.emailService.sendNotificationRegister(data.email, `http://localhost:4000/auth/verify-account?email=${data.email}`)
+        await this.emailProducer.sendNotificationRegister({
+            to: newAccount.email,
+            verifyLink
+        })
 
-        return
+        return newAccount
     }
 
     // verify account
@@ -198,7 +198,13 @@ export class AuthService {
         }
 
         if (!exitingAccount.isActive) {
-            await this.emailService.sendNotificationRegister(data.email, `http://localhost:4000/auth/verify-account?email=${data.email}`)
+
+            const verifyLink = `http://localhost:4000/auth/verify-account?email=${data.email}`
+
+            await this.emailProducer.sendNotificationRegister({
+                to: exitingAccount.email,
+                verifyLink
+            })
             throw new ForbiddenException("Request active account")
         }
 
@@ -268,7 +274,9 @@ export class AuthService {
         })
 
         // send notification
-        await this.emailService.sendNotificationChangePassword(exitingUser.email)
+        await this.emailProducer.sendChangePasswordEmail({
+            to: exitingUser.email
+        })
 
         return newUser
     }

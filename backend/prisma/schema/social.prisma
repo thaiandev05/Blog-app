@@ -1,11 +1,12 @@
 model Post {
     id String @id @default(uuid()) @db.Uuid
 
-    header  String
     content String
     status  StatusPost @default(PUBLIC)
 
-    userId String @db.Uuid
+    urlImgs String[]
+
+    userId String @db.Uuid @unique
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
     createAt DateTime  @default(now())

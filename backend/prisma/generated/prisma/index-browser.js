@@ -151,9 +151,9 @@ exports.Prisma.ReadProgressScalarFieldEnum = {
 
 exports.Prisma.PostScalarFieldEnum = {
   id: 'id',
-  header: 'header',
   content: 'content',
   status: 'status',
+  urlImgs: 'urlImgs',
   userId: 'userId',
   createAt: 'createAt',
   updateAt: 'updateAt',
