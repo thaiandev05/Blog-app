@@ -1,0 +1,22 @@
+model Message {
+    id Int @id @default(autoincrement())
+
+    content String
+
+    senderID String?    @db.Uuid
+    sender   User?   @relation(fields: [senderID], references: [id], onDelete: Cascade, onUpdate: Cascade, name: "MessageSender")
+
+    receiverID String?  @db.Uuid
+    receiver   User?   @relation(fields: [receiverID], references: [id], onDelete: Cascade, onUpdate: Cascade, name: "MessageReceiver")
+
+    createAt DateTime  @default(now())
+    updateAt DateTime  @updatedAt
+    deleteAt DateTime?
+}
+
+model ReadProgress {
+    id        String @id @default(uuid()) @db.Uuid
+    messageId Int    @default(0)
+
+    user User? @relation
+}

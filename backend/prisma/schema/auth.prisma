@@ -1,0 +1,25 @@
+model Session {
+    id String @id @default(uuid()) @db.Uuid
+
+    hashingRefreshToken String?
+
+    userId String @db.Uuid @unique
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    createAt DateTime @default(now())
+}
+
+model Code {
+    id String @id @default(uuid()) @db.Uuid
+
+    tokens     String?
+    typeOfCode TypeOfCode
+
+    userId String  @db.Uuid
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+enum TypeOfCode {
+    EMAIL
+    PHONE
+}

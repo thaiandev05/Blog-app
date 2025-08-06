@@ -1,0 +1,149 @@
+model Session {
+  id String @id @default(uuid()) @db.Uuid
+
+  hashingRefreshToken String?
+
+  userId String @unique @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createAt DateTime @default(now())
+}
+
+model Code {
+  id String @id @default(uuid()) @db.Uuid
+
+  tokens     String?
+  typeOfCode TypeOfCode
+
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+enum TypeOfCode {
+  EMAIL
+  PHONE
+}
+
+model Message {
+  id Int @id @default(autoincrement())
+
+  content String
+
+  senderID String? @db.Uuid
+  sender   User?   @relation(fields: [senderID], references: [id], onDelete: Cascade, onUpdate: Cascade, name: "MessageSender")
+
+  receiverID String? @db.Uuid
+  receiver   User?   @relation(fields: [receiverID], references: [id], onDelete: Cascade, onUpdate: Cascade, name: "MessageReceiver")
+
+  createAt DateTime  @default(now())
+  updateAt DateTime  @updatedAt
+  deleteAt DateTime?
+}
+
+model ReadProgress {
+  id        String @id @default(uuid()) @db.Uuid
+  messageId Int    @default(0)
+
+  user User? @relation
+}
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id String @id @default(uuid()) @db.Uuid
+
+  header  String
+  content String
+  status  StatusPost @default(PUBLIC)
+
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createAt DateTime  @default(now())
+  updateAt DateTime  @updatedAt
+  deleteAt DateTime?
+
+  comments Comment[]
+}
+
+model Comment {
+  id      String @id @default(uuid()) @db.Uuid
+  content String
+
+  postId String @db.Uuid
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+
+  repComments RepComment[]
+}
+
+model RepComment {
+  id      String @id @default(uuid()) @db.Uuid
+  content String
+
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+
+  senderID String @db.Uuid
+  sender   User   @relation(fields: [senderID], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  commentId String  @db.Uuid
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+enum StatusPost {
+  PUBLIC
+  PRIVATE
+  ARCHIVE
+}
+
+model User {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String?
+  gender      Gender?
+  dateOfBirth DateTime?
+  isActive    Boolean   @default(false)
+
+  avtUrl          String?
+  email           String  @unique
+  hashingPassword String
+
+  createAt DateTime  @default(now())
+  updateAt DateTime  @updatedAt
+  deleteAt DateTime?
+
+  sessions         Session[]
+  codes            Code[]
+  posts            Post[]
+  comments         Comment[]
+  repComments      RepComment[]
+  messages         Message[]     @relation("MessageSender")
+  receivedMessages Message[]     @relation("MessageReceiver")
+  readProgress     ReadProgress? @relation(fields: [readProgressId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  readProgressId   String?       @unique @db.Uuid
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHERS
+}

@@ -1,0 +1,52 @@
+model Post {
+    id String @id @default(uuid()) @db.Uuid
+
+    header  String
+    content String
+    status  StatusPost @default(PUBLIC)
+
+    userId String @db.Uuid
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    createAt DateTime  @default(now())
+    updateAt DateTime  @updatedAt
+    deleteAt DateTime?
+
+    comments Comment[]
+}
+
+model Comment {
+    id      String @id @default(uuid()) @db.Uuid
+    content String
+
+    postId String @db.Uuid
+    post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    userId String @db.Uuid
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    createAt DateTime @default(now())
+    updateAt DateTime @updatedAt
+
+    repComments RepComment[]
+}
+
+model RepComment {
+    id      String @id @default(uuid()) @db.Uuid
+    content String
+
+    createAt DateTime @default(now())
+    updateAt DateTime @updatedAt
+
+    senderID String @db.Uuid
+    sender   User   @relation(fields: [senderID], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    commentId String  @db.Uuid
+    comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+enum StatusPost {
+    PUBLIC
+    PRIVATE
+    ARCHIVE
+}

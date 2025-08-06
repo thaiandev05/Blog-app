@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Confirm Your Email</title>
+  <style>
+    body {
+      background-color: #ffffff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      font-size: 32px;
+      font-weight: bold;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .email-img {
+      width: 120px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 24px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 16px;
+      margin-bottom: 30px;
+    }
+
+    .button {
+      background-color: #1cb0f6;
+      color: white;
+      text-decoration: none;
+      padding: 12px 24px;
+      font-weight: bold;
+      border-radius: 6px;
+      display: inline-block;
+      transition: background-color 0.2s;
+    }
+
+    .button:hover {
+      background-color: #1393cc;
+    }
+
+    .footer {
+      font-size: 14px;
+      margin-top: 30px;
+      color: #777;
+    }
+
+    .footer a {
+      color: #1cb0f6;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">Blogify</div>
+    <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="Email Icon" class="email-img" />
+    <h1>Verify your email</h1>
+    <p>Thanks for signing up with Blogify! Click the button below to finish verifying your email address.</p>
+    <a href="{verify_link}" class="button">CONFIRM EMAIL</a>
+    <div class="footer">
+      Didn't create an account?
+      <a href="{delete_link}">Click here</a>
+      to remove this email address.
+    </div>
+  </div>
+</body>
+</html>
