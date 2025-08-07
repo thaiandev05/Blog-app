@@ -11188,19 +11188,19 @@ export namespace Prisma {
 
   export type PostWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    userId?: string
     AND?: PostWhereInput | PostWhereInput[]
     OR?: PostWhereInput[]
     NOT?: PostWhereInput | PostWhereInput[]
     content?: StringFilter<"Post"> | string
     status?: EnumStatusPostFilter<"Post"> | $Enums.StatusPost
     urlImgs?: StringNullableListFilter<"Post">
+    userId?: UuidFilter<"Post"> | string
     createAt?: DateTimeFilter<"Post"> | Date | string
     updateAt?: DateTimeFilter<"Post"> | Date | string
     deleteAt?: DateTimeNullableFilter<"Post"> | Date | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     comments?: CommentListRelationFilter
-  }, "id" | "userId">
+  }, "id">
 
   export type PostOrderByWithAggregationInput = {
     id?: SortOrder

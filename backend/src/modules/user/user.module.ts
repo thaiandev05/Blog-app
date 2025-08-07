@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { MulterModule } from '@nestjs/platform-express';
 import { PostModule } from '../post/post.module';
+import { CustomCacheModule } from '../custom-cache/customCache.module';
 
 @Module({
     imports: [
@@ -11,7 +12,8 @@ import { PostModule } from '../post/post.module';
             useFactory: () => ({
                 dest: './upload',
             }),
-        })
+        }),
+        CustomCacheModule
     ],
     controllers: [UserController],
     providers: [UserService]

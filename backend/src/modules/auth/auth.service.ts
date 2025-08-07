@@ -13,7 +13,7 @@ import { TokenService } from "./token.service";
 
 const TIME_LIFE_CACHE = 10 * 24 * 60 * 60
 const TIME_LIFE_SESSION = 10 * 365 * 24 * 60 * 60 * 1000
-const TIME_LIFE_ACCESS_TOKEN = 24 * 60 * 60
+const TIME_LIFE_ACCESS_TOKEN = 1000 * 60 * 60
 const TIME_LIFE_REFRESH_TOKEN = 24 * 60 * 60 * 7
 @Injectable()
 export class AuthService {

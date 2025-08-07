@@ -3,6 +3,7 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from "@nes
 import { Request } from 'express';
 import { PrismaService } from "src/prisma/prisma.service";
 import { EditDetailDto } from "./dto/EditDetailDto";
+import { CustomCacheService } from "../custom-cache/customCache.service";
 
 const TIME_LIFE_CACHE = 10 * 24 * 60 * 60
 
@@ -11,7 +12,8 @@ export class UserService {
 
     constructor(
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
-        private readonly prismaService: PrismaService
+        private readonly prismaService: PrismaService,
+        private readonly customCacheService: CustomCacheService
     ) { }
 
     // pipe data
@@ -38,13 +40,13 @@ export class UserService {
             where: { id: userId }
         })
 
-        if(!exitingUser) {
+        if (!exitingUser) {
             throw new NotFoundException("user not found")
         }
 
         let date
 
-        if(data.dateOfBirth != undefined || null) {
+        if (data.dateOfBirth != undefined || null) {
             date = this.parseDateString(data.dateOfBirth)
         }
 
@@ -59,7 +61,7 @@ export class UserService {
 
         // cache user
         const key = `account:${userId}`
-        await this.cacheManager.set(key,newUser,TIME_LIFE_CACHE)
+        await this.cacheManager.set(key, newUser, TIME_LIFE_CACHE)
 
         return newUser
     }
@@ -71,14 +73,14 @@ export class UserService {
             where: { id: req.user?.id }
         })
 
-        if(!exitingUser) {
+        if (!exitingUser) {
             throw new NotFoundException("User not found")
         }
 
         // get file path
         const fileUrls = file.filename
 
-        if(!fileUrls) {
+        if (!fileUrls) {
             throw new BadRequestException("File path is not empty")
         }
 
@@ -89,5 +91,26 @@ export class UserService {
         })
 
         return newUser
+    }
+
+    // load all author post
+    async loadAllAuthorPost(req: Request) {
+
+        // check cache
+        const key = `account-all-post:${req.user?.id}`
+        let listPost = await this.cacheManager.get(key)
+        if(listPost) {
+            return listPost
+        }
+
+        // if have not in the cache get in db
+        listPost = await this.prismaService.post.findMany({
+            where: { userId: req.user?.id }
+        })
+
+        // save in cache
+        await this.cacheManager.set(key, listPost, TIME_LIFE_CACHE)
+
+        return listPost
     }
 }

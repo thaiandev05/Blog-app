@@ -56,9 +56,15 @@ importers:
       handlebars:
         specifier: ^4.7.8
         version: 4.7.8
+      helmet:
+        specifier: ^8.1.0
+        version: 8.1.0
       install:
         specifier: ^0.13.0
         version: 0.13.0
+      multer:
+        specifier: ^2.0.2
+        version: 2.0.2
       nodemailer:
         specifier: ^7.0.5
         version: 7.0.5
@@ -2565,6 +2571,10 @@ packages:
   he@1.2.0:
     resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
     hasBin: true
+
+  helmet@8.1.0:
+    resolution: {integrity: sha512-jOiHyAZsmnr8LqoPGmCjYAaiuWwjAPLgY8ZX2XrmHawt99/u1y6RgrZMTeoPfpUbV96HOalYgz1qzkRbw54Pmg==}
+    engines: {node: '>=18.0.0'}
 
   hosted-git-info@7.0.2:
     resolution: {integrity: sha512-puUZAUKT5m8Zzvs72XWy3HtvVbTWljRE66cP60bxJzAqf2DgICo7lYTY2IHUmLnNpjYvw5bvmoHvPc0QO2a62w==}
@@ -7257,6 +7267,8 @@ snapshots:
 
   he@1.2.0:
     optional: true
+
+  helmet@8.1.0: {}
 
   hosted-git-info@7.0.2:
     dependencies:

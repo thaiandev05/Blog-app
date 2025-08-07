@@ -6,7 +6,7 @@ model Post {
 
     urlImgs String[]
 
-    userId String @db.Uuid @unique
+    userId String @db.Uuid 
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
     createAt DateTime  @default(now())

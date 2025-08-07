@@ -1,4 +1,4 @@
-import { Body, Controller, Patch, Post, Put, Query, Req, UploadedFile, UploadedFiles, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Patch, Post, Put, Query, Req, UploadedFile, UploadedFiles, UseInterceptors } from "@nestjs/common";
 import { AnyFilesInterceptor, FileInterceptor } from "@nestjs/platform-express";
 import { Request } from 'express';
 import { diskStorage } from "multer";
@@ -60,5 +60,20 @@ export class UserController {
     }))
     async editPost(@Query('idPost') idPost: string, @Body('newContent') newContent: string, @Req() req: Request, @UploadedFiles(new FileArrayValidationPipe()) files: Array<Express.Multer.File>) {
         return this.postService.editPost(req, files, newContent, idPost)
+    }
+
+    @Delete('delete-post')
+    async deletePost(@Req() req: Request, @Query('postId') postId: string) {
+        return this.postService.deletePost(postId, req)
+    }
+
+    @Get('list-post')
+    async listPost(@Req() req: Request) {
+        return this.userService.loadAllAuthorPost(req)
+    }
+
+    @Get('post')
+    async getDetailPost(@Req() req: Request, @Query('postId') postId: string) {
+        return this.postService.getDetailPost(req, postId)
     }
 }

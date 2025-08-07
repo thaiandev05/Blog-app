@@ -92,5 +92,59 @@ export class PostService {
     }
 
     // delete post
-    async deletePost() { }
+    async deletePost(postId: string, req: Request) {
+        // check avaialbe user
+        const exitingUser = await this.prismaService.user.findUnique({
+            where: { id: req.user?.id }
+        })
+
+        if (!exitingUser) {
+            throw new NotFoundException("user not found")
+        }
+
+        // available post
+        const key = `post:${postId}`
+        const exitingPost = await this.cacheManager.get(key) as Post
+
+        if (!exitingPost) {
+            throw new NotFoundException("Post is not found")
+        }
+
+        if (exitingPost.userId !== exitingUser.id) {
+            throw new UnauthorizedException("User is not author post")
+        }
+
+        // delete post
+        await this.prismaService.post.delete({
+            where: { id: exitingPost.id }
+        })
+
+        // delete cache post
+        await this.cacheManager.del(key)
+
+        return {
+            message: "Done"
+        }
+    }
+
+    // get detail post
+    async getDetailPost(req: Request, postId: string) {
+        const key = `postId:${postId}`
+
+        // check cache
+        let availablePost = await this.cacheManager.get(key)
+
+        if(availablePost) {
+            return availablePost
+        }
+
+        availablePost = await this.prismaService.post.findFirst({
+            where: { userId: req.user?.id }
+        })
+
+        // cache
+        await this.cacheManager.set(key,availablePost,TIME_LIFE_CACHE)
+
+        return availablePost
+    }
 }
