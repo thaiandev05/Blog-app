@@ -7,12 +7,14 @@ import { EditDetailDto } from "./dto/EditDetailDto";
 import { UserService } from "./user.service";
 import { PostService } from "../post/post.service";
 import { FileArrayValidationPipe } from "src/common/pipe/file-array.pipe";
+import { CommentService } from "../comment/comment.service";
 @Controller('user')
 export class UserController {
 
     constructor(
         private readonly userService: UserService,
-        private readonly postService: PostService
+        private readonly postService: PostService,
+        private readonly commentService: CommentService
     ) { }
 
     @Put('change-detail')
@@ -75,5 +77,25 @@ export class UserController {
     @Get('post')
     async getDetailPost(@Req() req: Request, @Query('postId') postId: string) {
         return this.postService.getDetailPost(req, postId)
+    }
+
+    @Post('comment')
+    async comment(@Req() req: Request, @Query('postId') postId: string, @Body('content') content: string) {
+        return this.commentService.comment(req, postId, content)
+    }
+
+    @Patch('edit-comment')
+    async editComment(@Req() req: Request, @Query('commentId') commentId: string, @Body('newContent') newContent: string) {
+        return this.commentService.editComment(req, commentId, newContent)
+    }
+
+    @Delete('delete-comment')
+    async deleteComment(@Req() req: Request, @Query('commentId') commentId: string) {
+        return this.commentService.deleteComment(req, commentId)
+    }
+
+    @Post('rep-comment')
+    async repComment(@Req() req: Request, @Query('commentId') commentId: string, @Body('content') content: string) {
+        return this.commentService.repComment(req, commentId, content)
     }
 }

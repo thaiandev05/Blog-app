@@ -4,18 +4,19 @@ import { UserController } from './user.controller';
 import { MulterModule } from '@nestjs/platform-express';
 import { PostModule } from '../post/post.module';
 import { CustomCacheModule } from '../custom-cache/customCache.module';
+import { UserResolver } from './user.resolver';
+import { CommentModule } from '../comment/comment.module';
 
 @Module({
     imports: [
-        PostModule,
+        PostModule, CustomCacheModule, CommentModule,
         MulterModule.registerAsync({
             useFactory: () => ({
                 dest: './upload',
             }),
         }),
-        CustomCacheModule
     ],
     controllers: [UserController],
-    providers: [UserService]
+    providers: [UserService, UserResolver]
 })
 export class UserModule { }

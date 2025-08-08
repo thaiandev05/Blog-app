@@ -1,12 +1,15 @@
-import { CacheModule } from '@nestjs/cache-manager';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, Reflector } from '@nestjs/core';
+import { GraphQLModule } from '@nestjs/graphql';
+import { join } from 'node:path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthCookieGuard } from './common/guard/auth-cookie.guard';
 import { EmailModule } from './email/email.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CommentModule } from './modules/comment/comment.module';
 import { CustomCacheModule } from './modules/custom-cache/customCache.module';
 import { UserModule } from './modules/user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -16,11 +19,15 @@ import { PrismaModule } from './prisma/prisma.module';
     ConfigModule.forRoot({
       isGlobal: true
     }),
-    CacheModule.register({
-      isGlobal: true,
-      ttl: 50000,
-      max: 100
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      graphiql: true,
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      sortSchema: true,
+      installSubscriptionHandlers: true,// ho tro realtime socket
+      context: ({ req }) => ({ req })
     }),
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [
